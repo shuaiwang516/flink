@@ -27,6 +27,7 @@ import org.apache.flink.core.memory.DataOutputView;
 import org.apache.flink.types.StringValue;
 import org.apache.flink.util.CollectionUtil;
 
+import edu.illinois.Ctest4jLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +72,26 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
     /** Stores the concrete key/value pairs of this configuration object. */
     protected final HashMap<String, Object> confData;
 
+    public void logGet(String key) {
+        LOG.info("[CTEST4J] get parameter: " + key);
+        Ctest4jLogger.logGet(key);
+    }
+
+    public void logGet(String key, String value) {
+        LOG.info("[CTEST4J] get parameter: " + key + " = " + value);
+        Ctest4jLogger.logGet(key, value);
+    }
+
+    public void logSet(String key) {
+        LOG.info("[CTEST4J] set parameter: " + key);
+        Ctest4jLogger.logSet(key);
+    }
+
+    public void logSet(String key, String value) {
+        LOG.info("[CTEST4J] set parameter: " + key + " = " + value);
+        Ctest4jLogger.logSet(key, value);
+    }
+
     // --------------------------------------------------------------------------------------------
 
     /** Creates a new empty configuration. */
@@ -112,11 +133,11 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
     public <T> Class<T> getClass(
             String key, Class<? extends T> defaultValue, ClassLoader classLoader)
             throws ClassNotFoundException {
+        logGet(key);
         Optional<Object> o = getRawValue(key);
         if (!o.isPresent()) {
             return (Class<T>) defaultValue;
         }
-
         if (o.get().getClass() == String.class) {
             return (Class<T>) Class.forName((String) o.get(), true, classLoader);
         }
@@ -720,6 +741,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
 
     @Override
     public <T> Optional<T> getOptional(ConfigOption<T> option) {
+        logGet(option.key());
         Optional<Object> rawValue = getRawValueFromOption(option);
         Class<?> clazz = option.getClazz();
 
@@ -799,6 +821,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
     // --------------------------------------------------------------------------------------------
 
     <T> void setValueInternal(String key, T value, boolean canBePrefixMap) {
+        logSet(key);
         if (key == null) {
             throw new NullPointerException("Key must not be null.");
         }
@@ -823,6 +846,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
     }
 
     private Optional<Object> getRawValue(String key, boolean canBePrefixMap) {
+        logGet(key);
         if (key == null) {
             throw new NullPointerException("Key must not be null.");
         }
@@ -852,6 +876,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
      * @return the value of the configuration or {@link Optional#empty()}.
      */
     private Optional<Object> getRawValueFromOption(ConfigOption<?> configOption) {
+        logGet(configOption.key());
         return applyWithOption(configOption, this::getRawValue);
     }
 
